@@ -261,6 +261,8 @@ keys = np.array([128, 192, 256])
 plaintext = 'CanTheyDoTheirFestinupcomingjune'
 key = 'BUET CSE17 Batch'
 
+print("HEre in AES file")
+
 # #run AES
 # aes, allkeysArray = initAES(key, 128)
 # cipher = RunAES(aes, plaintext, "encrypt")

@@ -1,7 +1,8 @@
 import socket
+from utils import *
 from SocketConnection import SocketConnection
-from aes_v2 import *
-from rsa import *
+from aes_v2 import AES, initAES, RunAES
+from rsa import RSA
 import os
 
 #directory
