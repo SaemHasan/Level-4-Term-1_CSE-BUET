@@ -10,6 +10,7 @@ class AES:
         self.keyLength = keyLength
         self.wordCount = self.keyLength//32
         self.arr = np.array([])  # all keys
+        self.keyArr = []
         return
 
     def stringtoHex(self, hexstring):
@@ -44,19 +45,21 @@ class AES:
         return ar
     
     def handleKey(self, key):
+        keylen = self.keyLength//8
         length = len(key)
-        if length == 16:
+        if length == keylen:
             self.keyGenerator(key)
-        elif length < 16:
-            self.keyGenerator(key + '0'*(16-length))
-        elif length > 16:
-            self.keyGenerator(key[:16])
+        elif length < keylen:
+            self.keyGenerator(key + '0'*(keylen-length))
+        elif length > keylen:
+            self.keyGenerator(key[:keylen])
 
     def keyGenerator(self, key):
         key = self.stringtoHex(key)
 
         keyArray = np.array([int(key[x:x+2], 16)
                             for x in range(0, len(key), 2)])
+        self.keyArr = keyArray
         # printArrayHex(keyArray)
         a = []
         for i in range(0, self.roundLength):
@@ -132,6 +135,23 @@ class AES:
                     newArray[i][j] = np.bitwise_xor(
                         newArray[i][j], mul.int_val())
         return newArray
+    
+    def encryption(self, plaintext):
+        #add padding
+        while len(plaintext) % 16 != 0:
+            plaintext += ' '
+        
+        ciphertexts = []
+        while len(plaintext) != 0:
+            pt = plaintext[:16]
+            plaintext = plaintext[16:]
+            ct = self.encrypt(pt)
+            ciphertexts.append(ct)
+
+        #printing ciphertexts
+        # for ct in ciphertexts:
+        #     printArrayHex(array2Dto1D(ct))
+        return ciphertexts
 
     def encrypt(self, plaintext):
         # print("plaintext len : ", len(plaintext))
@@ -160,6 +180,20 @@ class AES:
         # print("cipher text  round :  ", self.roundLength-1)
         # print2DArrayHex(cipherTextArray2D)
         return cipherTextArray2D
+    
+    def decryption(self, ciphertexts):
+        pts = []
+        for i in range(len(ciphertexts)):
+            ct = ciphertexts[i]
+            pt = self.decrypt(ct)
+            pts.append(pt)
+
+        #printing decrypted text
+        # for pt in pts:
+        #     printString(array2Dto1D(pt))
+        # print()
+
+        return pts
 
     def decrypt(self, ciphertext):
         roundKey = self.arr[self.roundLength-1].transpose()
@@ -186,13 +220,54 @@ class AES:
 
         return plainTextArray2D
 
+def initAES(key, keyLen):
+    roundLength = 10
+    if keyLen == 128:
+        roundLength = 10
+    elif keyLen == 192:
+        roundLength = 12
+    elif keyLen == 256:
+        roundLength = 14
+    aes = AES(roundLength, keyLen)
+    allKeysArray = aes.handleKey(key)
+    return aes, allKeysArray
 
-rc = np.array([1, 2, 4, 8, 16, 32, 64, 128, 27, 54])
-keys = np.array([128, 192, 256])
+def RunAES(aes, plaintext, mode):
+    if mode == "encrypt":
+        ciphertexts = aes.encryption(plaintext)
+        return ciphertexts
+    elif mode == "decrypt":
+        plaintexts = aes.decryption(plaintext)
+        return plaintexts
+
+def getPlainText(plain):
+    plaintext = ""
+    for pt in plain:
+        plaintext += getStringFromHexArray(array2Dto1D(pt))
+    return plaintext
+
+def printPlainText(plain):
+    #printing decrypted text
+    for pt in plain:
+        printString(array2Dto1D(pt))
+    print()
+
+#round constant
+rc = np.array([1, 2, 4, 8, 16, 32, 64, 128, 27, 54, 108, 216, 171, 77, 154])
+
 rounds = np.array([10, 12, 14])
-plaintext = 'CanTheyDoTheirFest'
+keys = np.array([128, 192, 256])
+
+plaintext = 'CanTheyDoTheirFestinupcomingjune'
 key = 'BUET CSE17 Batch'
 
+# #run AES
+# aes, allkeysArray = initAES(key, 128)
+# cipher = RunAES(aes, plaintext, "encrypt")
+# plain = RunAES(aes, cipher, "decrypt")
+# printPlainText(plain)
+
+"""
 #aes initialization
 aes = AES(rounds[0], keys[0])
 
@@ -240,3 +315,4 @@ print("Key Scheduling : ", end_time_key - start_time_key," seconds")
 print("Encryption time : ", end_time_encrypt - start_time_encrypt, " seconds")
 print("Decryption time : ", end_time_decrypt - start_time_decrypt, " seconds")
 
+"""

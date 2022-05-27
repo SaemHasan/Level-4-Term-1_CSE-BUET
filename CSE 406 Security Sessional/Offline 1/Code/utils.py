@@ -106,6 +106,13 @@ def printString(hexArray):
         a = hex(v)
         print(hex_to_string(a), end='')
 
+def getStringFromHexArray(hexArray):
+    s = ""
+    for v in hexArray:
+        a = hex(v)
+        s += hex_to_string(a)
+    return s
+
 def hex_to_string(hex):
     if hex[:2] == '0x':
         hex = hex[2:]
