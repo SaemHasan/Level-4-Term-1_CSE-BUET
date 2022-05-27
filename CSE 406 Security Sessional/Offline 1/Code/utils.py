@@ -7,6 +7,7 @@ from BitVector import *
 from matplotlib.pyplot import hexbin
 import numpy as np
 import random
+import time
 
 Sbox = (
     0x63, 0x7C, 0x77, 0x7B, 0xF2, 0x6B, 0x6F, 0xC5, 0x30, 0x01, 0x67, 0x2B, 0xFE, 0xD7, 0xAB, 0x76,
@@ -99,3 +100,14 @@ def array1Dto2D(array):
 
 def array2Dto1D(array):
     return np.array(array.transpose()).flatten()
+
+def printString(hexArray):
+    for v in hexArray:
+        a = hex(v)
+        print(hex_to_string(a), end='')
+
+def hex_to_string(hex):
+    if hex[:2] == '0x':
+        hex = hex[2:]
+    string_value = bytes.fromhex(hex).decode('utf-8')
+    return string_value

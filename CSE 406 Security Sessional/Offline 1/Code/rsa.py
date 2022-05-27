@@ -24,7 +24,7 @@ class RSA:
     def keyGenerator(self, n):
         p = self.primeNumberGenerator(n//2)
         q = self.primeNumberGenerator(n//2)
-        print(p, q)
+        # print(p, q)
         n = p*q
         phi = (p - 1) * (q - 1)
         e = 3
@@ -43,17 +43,42 @@ class RSA:
 
     def encrypt(self, plaintext):
         ciphertext = pow(plaintext, self.e, self.n)
-        print(ciphertext)
+        # print(ciphertext)
         return ciphertext
 
     def decrypt(self, ciphertext):
         plaintext = pow(ciphertext, self.d, self.n)
-        print(plaintext)
+        # print(plaintext)
         return plaintext
 
+def RunRSA(K, text):
+    rsa = RSA()
+    
+    #key generation
+    start_time_key = time.time()
+    rsa.keyGenerator(K)
+    keyTime = time.time()-start_time_key
+    
+    #encryption
+    start_time_encrypt = time.time()
+    a = rsa.encrypt(text)
+    encryptTime = time.time()-start_time_encrypt
+    
+    #decryption
+    start_time_decrypt = time.time()
+    b = rsa.decrypt(a)
+    decryptTime = time.time()-start_time_decrypt
+    
+    print(b)
 
-rsa = RSA()
-print(rsa.keyGenerator(128))
-a = rsa.encrypt(12345)
-b = rsa.decrypt(a)
-print(a, b)
+    print("K : ", K)
+    print("Key Generation Time : ", keyTime, "seconds")
+    print("Encryption Time : ", encryptTime, "seconds")
+    print("Decryption Time : ", decryptTime, "seconds")
+
+
+K = [16,32,64,128]
+text = 12547
+
+for i in range(len(K)):
+    RunRSA(K[i], text)

@@ -42,6 +42,15 @@ class AES:
         # print("Here in G method")
         # print(ar)
         return ar
+    
+    def handleKey(self, key):
+        length = len(key)
+        if length == 16:
+            self.keyGenerator(key)
+        elif length < 16:
+            self.keyGenerator(key + '0'*(16-length))
+        elif length > 16:
+            self.keyGenerator(key[:16])
 
     def keyGenerator(self, key):
         key = self.stringtoHex(key)
@@ -125,7 +134,7 @@ class AES:
         return newArray
 
     def encrypt(self, plaintext):
-        print("plaintext len : ", len(plaintext))
+        # print("plaintext len : ", len(plaintext))
         plaintextHex = self.stringtoHex(plaintext)
         plaintextArray = np.array([int(plaintextHex[x:x+2], 16)
                                    for x in range(0, len(plaintextHex), 2)])
@@ -148,8 +157,8 @@ class AES:
         shiftrows = self.shiftrows(subBytes)
         roundKey = self.arr[self.roundLength-1].transpose()
         cipherTextArray2D = np.bitwise_xor(shiftrows, roundKey)
-        print("cipher text  round :  ", self.roundLength-1)
-        print2DArrayHex(cipherTextArray2D)
+        # print("cipher text  round :  ", self.roundLength-1)
+        # print2DArrayHex(cipherTextArray2D)
         return cipherTextArray2D
 
     def decrypt(self, ciphertext):
@@ -172,8 +181,8 @@ class AES:
         invsubBytes = self.invsubBytes(invshiftrows)
         roundKey = self.arr[0].transpose()
         plainTextArray2D = np.bitwise_xor(invsubBytes, roundKey)
-        print("plain text  round :  ", 0)
-        print2DArrayHex(plainTextArray2D)
+        # print("plain text  round :  ", 0)
+        # print2DArrayHex(plainTextArray2D)
 
         return plainTextArray2D
 
@@ -181,13 +190,53 @@ class AES:
 rc = np.array([1, 2, 4, 8, 16, 32, 64, 128, 27, 54])
 keys = np.array([128, 192, 256])
 rounds = np.array([10, 12, 14])
-plaintext = 'Two One Nine Two'
-key = 'Thats my Kung Fu'
+plaintext = 'CanTheyDoTheirFest'
+key = 'BUET CSE17 Batch'
 
-
+#aes initialization
 aes = AES(rounds[0], keys[0])
-aes.keyGenerator(key)
-c = aes.encrypt(plaintext)
-p = aes.decrypt(c)
-print("plaintext : ")
-printArrayHex(array2Dto1D(p))
+
+#key generation
+start_time_key = time.time()
+allKeysArray = aes.handleKey(key)
+end_time_key = time.time()
+
+#add padding
+while len(plaintext) % 16 != 0:
+    plaintext += ' '
+
+
+#encryption
+ciphertexts = []
+
+start_time_encrypt = time.time()
+while len(plaintext) != 0:
+    pt = plaintext[:16]
+    plaintext = plaintext[16:]
+    ct = aes.encrypt(pt)
+    ciphertexts.append(ct)
+end_time_encrypt = time.time()
+
+#printing ciphertexts
+for ct in ciphertexts:
+    printArrayHex(array2Dto1D(ct))
+
+#decryption
+pts = []
+start_time_decrypt = time.time()
+for i in range(len(ciphertexts)):
+    ct = ciphertexts[i]
+    pt = aes.decrypt(ct)
+    pts.append(pt)
+end_time_decrypt = time.time()
+
+#printing decrypted text
+for pt in pts:
+    printString(array2Dto1D(pt))
+print()
+
+#priting time details
+print("Key Scheduling : ", end_time_key - start_time_key," seconds")
+print("Encryption time : ", end_time_encrypt - start_time_encrypt, " seconds")
+print("Decryption time : ", end_time_decrypt - start_time_decrypt, " seconds")
+
