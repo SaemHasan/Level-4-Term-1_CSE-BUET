@@ -160,6 +160,7 @@ class AES:
                                    for x in range(0, len(plaintextHex), 2)])
         plainTextArray2D = array1Dto2D(plaintextArray)
         roundKey = self.arr[0].transpose()
+        # print(plainTextArray2D.shape, roundKey.shape)
         cipherTextArray2D = np.bitwise_xor(plainTextArray2D, roundKey)
 
         # round 1-9
@@ -252,69 +253,93 @@ def printPlainText(plain):
         printString(array2Dto1D(pt))
     print()
 
+def RunAES_time_related(plaintext, key):
+    #aes initialization
+    aes = AES(rounds[0], keys[0])
+
+    #key generation
+    start_time_key = time.time()
+    allKeysArray = aes.handleKey(key)
+    end_time_key = time.time()
+
+    print("Plain Text :\n"+plaintext)
+    # print(len(plaintext))
+    print(aes.stringtoHex(plaintext))
+
+    print("\nkey :\n"+key)
+    print(aes.stringtoHex(key))
+
+    #add padding
+    while len(plaintext) % 16 != 0:
+        plaintext += ' '
+
+    mainText = plaintext
+    #encryption
+    ciphertexts = []
+
+    start_time_encrypt = time.time()
+    while len(plaintext) != 0:
+        pt = plaintext[:16]
+        plaintext = plaintext[16:]
+        ct = aes.encrypt(pt)
+        ciphertexts.append(ct)
+    end_time_encrypt = time.time()
+
+    #printing ciphertexts
+    print("\nCipher Text :")
+    for ct in ciphertexts:
+        printArrayHex(array2Dto1D(ct))
+
+    #decryption
+    pts = []
+    start_time_decrypt = time.time()
+    for i in range(len(ciphertexts)):
+        ct = ciphertexts[i]
+        pt = aes.decrypt(ct)
+        pts.append(pt)
+    end_time_decrypt = time.time()
+
+    #printing decrypted text
+    print("\nDeciphered Text: ")
+    decryptedString = ""
+    for pt in pts:
+        decryptedString += getStringFromHexArray(array2Dto1D(pt))
+        printString(array2Dto1D(pt))
+    
+    print("\n")
+
+    if decryptedString == mainText:
+        print("Decryption Successful")
+    else:
+        print("Decryption Failed")
+    
+    #priting time details
+    print("\nExecution time details: ")
+    print("Key Scheduling : ", end_time_key - start_time_key," seconds")
+    print("Encryption time : ", end_time_encrypt - start_time_encrypt, " seconds")
+    print("Decryption time : ", end_time_decrypt - start_time_decrypt, " seconds")
+
+
 #round constant
 rc = np.array([1, 2, 4, 8, 16, 32, 64, 128, 27, 54, 108, 216, 171, 77, 154])
 
 rounds = np.array([10, 12, 14])
 keys = np.array([128, 192, 256])
 
-plaintext = 'CanTheyDoTheirFestinupcomingjune'
+plaintext = 'CanTheyDoTheirFest'
 key = 'BUET CSE17 Batch'
 
-print("HEre in AES file")
+# print("HEre in AES file")
 
-# #run AES
+#run AES
 # aes, allkeysArray = initAES(key, 128)
 # cipher = RunAES(aes, plaintext, "encrypt")
 # plain = RunAES(aes, cipher, "decrypt")
 # printPlainText(plain)
 
-"""
-#aes initialization
-aes = AES(rounds[0], keys[0])
-
-#key generation
-start_time_key = time.time()
-allKeysArray = aes.handleKey(key)
-end_time_key = time.time()
-
-#add padding
-while len(plaintext) % 16 != 0:
-    plaintext += ' '
+#print time related data
+# RunAES_time_related(plaintext, key)
 
 
-#encryption
-ciphertexts = []
 
-start_time_encrypt = time.time()
-while len(plaintext) != 0:
-    pt = plaintext[:16]
-    plaintext = plaintext[16:]
-    ct = aes.encrypt(pt)
-    ciphertexts.append(ct)
-end_time_encrypt = time.time()
 
-#printing ciphertexts
-for ct in ciphertexts:
-    printArrayHex(array2Dto1D(ct))
-
-#decryption
-pts = []
-start_time_decrypt = time.time()
-for i in range(len(ciphertexts)):
-    ct = ciphertexts[i]
-    pt = aes.decrypt(ct)
-    pts.append(pt)
-end_time_decrypt = time.time()
-
-#printing decrypted text
-for pt in pts:
-    printString(array2Dto1D(pt))
-print()
-
-#priting time details
-print("Key Scheduling : ", end_time_key - start_time_key," seconds")
-print("Encryption time : ", end_time_encrypt - start_time_encrypt, " seconds")
-print("Decryption time : ", end_time_decrypt - start_time_decrypt, " seconds")
-
-"""

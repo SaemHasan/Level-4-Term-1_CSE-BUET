@@ -28,7 +28,7 @@ privateKey = [int(prk[0]), int(prk[1])]
 rsa = RSA()
 rsa.setKeys(publicKey[1], publicKey[0], privateKey[0])
 
-#key receive
+#aes key receive
 valArr = rc.recieve()
 keyArr = []
 for val in valArr:

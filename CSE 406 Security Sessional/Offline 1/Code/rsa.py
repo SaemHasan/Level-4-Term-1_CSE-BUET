@@ -13,7 +13,7 @@ class RSA:
             bv = BitVector(intVal=0)
             bv = bv.gen_random_bits(n)
             check = bv.test_for_primality()
-            if check>0.9:
+            if check>0.99:
                 return bv.int_val()
 
     def gcd(self, a, b):
@@ -75,16 +75,20 @@ def RunRSA(K, text):
     b = rsa.decrypt(a)
     decryptTime = time.time()-start_time_decrypt
     
-    print(b)
+    # print(b)
+    if b == text:
+        print("Decryption Successful. Plaintext: ", text, " Decrypted: ", b)
+    else:
+        print("Decryption Failed. Plaintext: ", text, " Decrypted: ", b)
 
     print("K : ", K)
     print("Key Generation Time : ", keyTime, "seconds")
     print("Encryption Time : ", encryptTime, "seconds")
-    print("Decryption Time : ", decryptTime, "seconds")
+    print("Decryption Time : ", decryptTime, "seconds\n")
 
 
 Karr = [16,32,64,128]
-text = 1254
+text = 125
 
 # for i in range(len(Karr)):
 #     RunRSA(Karr[i], text)
