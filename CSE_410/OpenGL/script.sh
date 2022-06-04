@@ -1,0 +1,1 @@
+g++ -o main $1 -framework OpenGL -framework GLUT -Wno-deprecated-declarations && ./main
