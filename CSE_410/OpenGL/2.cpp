@@ -12,6 +12,9 @@
 #endif
 
 #define pi (2*acos(0.0))
+#define WHEEL_RADIUS 30
+#define WHEEL_HEIGHT 20
+#define WHEEL_STEP 3
 
 double cameraHeight;
 double cameraAngle;
@@ -24,19 +27,35 @@ struct point
 	double x,y,z;
 };
 
+struct point wheelCenter;
+double rotationAngle;
+double directionAngle;
+
+struct point initPoint(double x, double y, double z)
+{
+	struct point p;
+	p.x=x;
+	p.y=y;
+	p.z=z;
+	return p;
+}
 
 void drawAxes()
 {
 	if(drawaxes==1)
 	{
-		glColor3f(1.0, 1.0, 1.0);
+		//glColor3f(1.0, 0, 0);
 		glBegin(GL_LINES);{
+
+			glColor3f(1.0, 0, 0);
 			glVertex3f( 100,0,0);
 			glVertex3f(-100,0,0);
 
+			glColor3f(0, 1.0, 0);
 			glVertex3f(0,-100,0);
 			glVertex3f(0, 100,0);
 
+			glColor3f(0, 0, 1.0);
 			glVertex3f(0,0, 100);
 			glVertex3f(0,0,-100);
 		}glEnd();
@@ -72,10 +91,20 @@ void drawSquare(double a)
 {
     //glColor3f(1.0,0.0,0.0);
 	glBegin(GL_QUADS);{
-		glVertex3f( a, a,2);
-		glVertex3f( a,-a,2);
-		glVertex3f(-a,-a,2);
-		glVertex3f(-a, a,2);
+		glVertex3f( a, a,0);
+		glVertex3f( a,-a,0);
+		glVertex3f(-a,-a,0);
+		glVertex3f(-a, a,0);
+	}glEnd();
+}
+
+void drawRectangle(double length, double width){
+	glColor3f(0.7,0.7,0.7);
+	glBegin(GL_QUADS);{
+		glVertex3f(length, width,0);
+		glVertex3f(length,-width,0);
+		glVertex3f(-length,-width,0);
+		glVertex3f(-length, width,0);
 	}glEnd();
 }
 
@@ -115,13 +144,35 @@ void drawCylinder(double radius,double height,int segments)
     }
 }
 
-void drawtask(){
+void drawWheel(){
+	
     glPushMatrix();
     {
-    glTranslatef(0,0,30);
-    glRotatef(90,1,0,0);
-    drawCylinder(30,20,30);
+    	glRotatef(90,1,0,0);
+    	drawCylinder(WHEEL_RADIUS,WHEEL_HEIGHT,30);
     }
+	glPopMatrix();
+
+	glPushMatrix();
+	{
+		drawRectangle(WHEEL_RADIUS,WHEEL_HEIGHT/2.0);
+	}
+	glPopMatrix();
+
+	glPushMatrix();
+	{
+		glRotatef(90,0,1,0);
+		drawRectangle(WHEEL_RADIUS,WHEEL_HEIGHT/2.0);
+	}
+	glPopMatrix();
+}
+
+void drawtask(){
+	glTranslatef(0,0,WHEEL_RADIUS);
+	glTranslatef(wheelCenter.x,wheelCenter.y,wheelCenter.z);
+	glRotatef(directionAngle,0,0,1);
+	glRotatef(rotationAngle,0,1,0);
+	drawWheel();
 }
 
 void keyboardListener(unsigned char key, int x,int y){
@@ -130,7 +181,24 @@ void keyboardListener(unsigned char key, int x,int y){
 		case '1':
 			drawgrid=1-drawgrid;
 			break;
-
+		case 'a':
+			directionAngle += WHEEL_STEP;
+			break;
+		case 'd':
+			directionAngle -= WHEEL_STEP;
+			break;
+		case 'w':
+			rotationAngle += WHEEL_STEP;
+			wheelCenter.x += (WHEEL_RADIUS*WHEEL_STEP*pi/180.0)*cos(directionAngle*pi/180.0);
+			wheelCenter.y += (WHEEL_RADIUS*WHEEL_STEP*pi/180.0)*sin(directionAngle*pi/180.0);
+			wheelCenter.z = 0;
+			break;
+		case 's':
+			rotationAngle -= WHEEL_STEP;
+			wheelCenter.x -= (WHEEL_RADIUS*WHEEL_STEP*pi/180.0)*cos(directionAngle*pi/180.0);
+			wheelCenter.y -= (WHEEL_RADIUS*WHEEL_STEP*pi/180.0)*sin(directionAngle*pi/180.0);
+			wheelCenter.z = 0;
+			break;
 		default:
 			break;
 	}
@@ -232,21 +300,7 @@ void display(){
 
 	drawAxes();
 	drawGrid();
-
-    //glColor3f(1,0,0);
-    //drawSquare(10);
-    // drawCylinder(30,20,30);
     drawtask();
-    //drawSS();
-
-    //drawCircle(30,24);
-
-    //drawCone(20,50,24);
-
-	//drawSphere(30,24,20);
-
-
-
 
 	//ADD this line in the end --- if you use double buffer (i.e. GL_DOUBLE)
 	glutSwapBuffers();
@@ -266,6 +320,9 @@ void init(){
 	cameraHeight=150.0;
 	cameraAngle=1.0;
 	angle=0;
+	wheelCenter = initPoint(0,0,0);
+	rotationAngle =0;
+	directionAngle =0;
 
 	//clear the screen
 	glClearColor(0,0,0,0);
