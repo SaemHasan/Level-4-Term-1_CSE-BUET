@@ -1,0 +1,125 @@
+1. kono jaygay zero lekha jabe na 
+2. zero korte hoile xor korbo
+3. kono address e o zero thaka jabe na
+4. mov ax,1 deya jabe na. samne zero chole ashbe
+5. mov al,1 hobe
+6. argruement push hobe dan side theke
+7. ebx e function er address deya lage
+8. function er return value eax e thake
+9. ecx e 5 na diye cl e 5 dite hobe
+10. erpore cmd te 2 ta command diye machine code generate
+
+call er machine code ffd3
+eita shesh e thakbe machine code er
+
+disas foo kore code segment er address neya lagbe
+
+zero er way around:
+1. xor
+2. shellcode boi er pdf er 2.2
+shift left shift right
+reg er ax, al esb use kora
+
+
+B1 online :
+
+b1 e buffer arekta scope er vitore. ei jonno next diye diye 
+strcpy porjonto jawa lagbe
+
+foo er vitore bof call hocche. tokhon overflow kora lagbe. eijonno age  foo te breakpoint 
+terpore bof e break point deya lagbe
+
+ekbar run deyar pore debugger e continue deya lagbe. run mane shuru theke start
+continue maane jeikhane aso seikhan theke abr chalo kora
+
+mov ebx ==> bb
+
+shurtei bof e break point dile vhul hobe
+
+b foo >> run >> b bof >> continue >> next >> next >> p &buffer
+
+
+
+leave er thik age age 
+
+disas bof
+
+b *0x565562a3
+continue
+//boshe jabe already payload e
+
+p (*(unsigned*) ($ebp+4)) ==> return address jeita exploit e set korbo
+
+
+B2 Online:
+
+bof >> foo >> shell code execute
+
+first e bof e ashte hobe 
+erpore disas diye foo ar execute er address jana lagbe
+
+b bof >> run >> next >> disas foo >> disas execute
+p $ebp
+p &buffer
+
+A1:
+shurute nop koto gula
+
+erpore shell code
+
+erpore bakita return address diye vhore dibo
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

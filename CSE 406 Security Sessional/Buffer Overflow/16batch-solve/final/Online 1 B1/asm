@@ -1,0 +1,2 @@
+mov ebx, 0x565562e5
+call ebx
