@@ -5,6 +5,8 @@
 #include<fstream>
 #include <cstdlib>
 
+#define INF 999999999
+
 using namespace std;
 
 double deg2rad(double deg){

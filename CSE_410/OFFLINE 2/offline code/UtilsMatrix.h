@@ -192,8 +192,9 @@ public:
         m.matrix[0][0] = near/r;
         m.matrix[1][1] = near/t;
         m.matrix[2][2] = -(far+near)/(far-near);
-        m.matrix[2][3] = -2*far*near/(far-near);
+        m.matrix[2][3] = -(2*far*near)/(far-near);
         m.matrix[3][2] = -1;
+        m.matrix[3][3] = 0;
         return m;
     }
 
@@ -208,6 +209,9 @@ public:
 
     Point getPoint(){
         Point p(matrix[0][0], matrix[1][0], matrix[2][0]);
+        if(matrix[3][0] != 0){
+            p = p/matrix[3][0];
+        }
         return p;
     }
 

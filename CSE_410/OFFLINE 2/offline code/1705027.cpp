@@ -34,10 +34,10 @@ int main(int argc,char* argv[]){
     ofstream outStage1("output/stage1.txt");
     ofstream outStage2("output/stage2.txt");
     ofstream outStage3("output/stage3.txt");
-    ofstream zBuffer("output/z-buffer.txt");
+    ofstream zBufferfile("output/z-buffer.txt");
 
 
-    if(!outStage1.is_open() || !outStage2.is_open() || !outStage3.is_open() || !zBuffer.is_open()){
+    if(!outStage1.is_open() || !outStage2.is_open() || !outStage3.is_open() || !zBufferfile.is_open()){
         cout<<"Error opening output file"<<endl;
         return 1;
     }
@@ -47,7 +47,7 @@ int main(int argc,char* argv[]){
     outStage1<<fixed<<setprecision(numberOfDecimalPlaces);
     outStage2<<fixed<<setprecision(numberOfDecimalPlaces);
     outStage3<<fixed<<setprecision(numberOfDecimalPlaces);
-    zBuffer<<fixed<<setprecision(numberOfDecimalPlaces-1);
+    zBufferfile<<fixed<<setprecision(numberOfDecimalPlaces-1);
 
     //Read from file
     Point eye, look, up;
@@ -182,10 +182,17 @@ int main(int argc,char* argv[]){
     //procedure
     zBufferAlgorithm();
 
-
+    //write to z buffer file
+    for(int i = 0; i < SCREEN_HEIGHT; i++){
+        for(int j = 0; j < SCREEN_WIDTH; j++){
+            if(zBuffer[i][j]!=REAR_Z)
+                zBufferfile<<zBuffer[i][j]<<"\t";
+        }
+        zBufferfile<<endl;
+    }
 
     cout<<"memory clear kora lagbe. vector gula delete korte hobe using vector<tempObject>().swap(tempVector);"<<endl;
-    zBuffer.close();
+    zBufferfile.close();
 
     return 0;
 

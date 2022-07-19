@@ -8,6 +8,7 @@ bitmap_image image;
 
 vector<Triangle> triangles;
 vector< vector<double> > zBuffer;
+vector< vector<Color> > colorBuffer;
 
 
 
@@ -55,20 +56,20 @@ void initializeBuffers(){
         }
     }
 
-    //create image
-    image= bitmap_image(SCREEN_WIDTH, SCREEN_HEIGHT);
+    Color black = Color(0,0,0);
+    //color buffer
+    colorBuffer.resize(SCREEN_WIDTH);
     for(int i=0; i<SCREEN_WIDTH; i++){
+        colorBuffer[i].resize(SCREEN_HEIGHT);
         for(int j=0; j<SCREEN_HEIGHT; j++){
-            image.set_pixel(i,j,0,0,0);
+            colorBuffer[i][j] = black;
         }
     }
-
-    // image.save_image("output/out.bmp");
 }
 
-double computeZvalue(Triangle t, Point p){
-    double z = (rand()%2)/REAR_Z;
-    
+double calcZ(Point p1, Point p2, double ys){
+    double z;
+    z = p1.z + (p2.z - p1.z) * ((ys-p1.y)/(p2.y-p1.y));
     return z;
 }
 
@@ -81,7 +82,7 @@ int columnNumberFromX(double x){
 }
 
 bool isInTriangle(Point p, Triangle t){
-    if(p.x < t.min_x() || p.x > t.max_x() || p.y < t.min_y() || p.y > t.max_y()){
+    if(p.x< t.min_x() || p.x>t.max_x() || p.y<t.min_y() || p.y>t.max_y()){
         return false;
     }
     return true;
@@ -90,45 +91,116 @@ bool isInTriangle(Point p, Triangle t){
 void zBufferAlgorithm(){
     for (int k=0; k<triangles.size(); k++){
         Triangle triangle = triangles[k];
+        triangle.prepareLines();
         // cout<<triangle<<endl;
         //clipping
         double top_scanline = min(triangle.max_y(), Top_Y);
-        double bottom_scanline = min(triangle.min_y(), Bottom_Y);
-        double left_scanline = min(triangle.min_x(), Left_X);
-        double right_scanline = min(triangle.max_x(), Right_X);
+        double bottom_scanline = max(triangle.min_y(), Bottom_Y);
+        // double left_scanline = min(triangle.min_x(), Left_X);
+        // double right_scanline = min(triangle.max_x(), Right_X);
 
-        cout<<top_scanline<<" "<<bottom_scanline<<" "<<left_scanline<<" "<<right_scanline<<endl;
+        // cout << "top_scanline: " << top_scanline << endl;
+        // cout << "bottom_scanline: " << bottom_scanline << endl;
+        // cout<<top_scanline<<" "<<bottom_scanline<<endl;
 
         //row and column number
         int top_row = rowNumberFromY(top_scanline);
         int bottom_row = rowNumberFromY(bottom_scanline);
-        int left_column = columnNumberFromX(left_scanline);
-        int right_column = columnNumberFromX(right_scanline);
+        // int left_column = columnNumberFromX(left_scanline);
+        // int right_column = columnNumberFromX(right_scanline);
 
-        cout<<top_row<<" "<<bottom_row<<" "<<left_column<<" "<<right_column<<endl;
+        
+        
 
         for(int i=top_row; i<=bottom_row; i++){
+            double ys = Top_Y - i*dy;
+            double xa,xb,za,zb;
+            Point p1, p2, p3;
+            if(triangle.pMax.y == triangle.pMid.y){
+                xa = triangle.line31.getX(ys);
+                xb = triangle.line23.getX(ys);
+                za = calcZ(triangle.pMax, triangle.pMin, ys);
+                zb = calcZ(triangle.pMid, triangle.pMin, ys);
+                
+            }
+            else if(triangle.pMin.y == triangle.pMid.y){
+                xa = triangle.line12.getX(ys);
+                xb = triangle.line31.getX(ys);
+                za = calcZ(triangle.pMin, triangle.pMax, ys);
+                zb = calcZ(triangle.pMid, triangle.pMax, ys);
+            }
+            else if(ys>=triangle.pMid.y){
+                xa = triangle.line12.getX(ys);
+                xb = triangle.line31.getX(ys);
+                za = calcZ(triangle.pMax, triangle.pMid, ys);
+                zb = calcZ(triangle.pMin, triangle.pMax, ys);
+                if(xb == 0){
+                    cout<<"xb is 0(ys > midy)"<<endl;
+                }
+            }
+            else if(ys<triangle.pMid.y){
+                xa = triangle.line23.getX(ys);
+                xb = triangle.line31.getX(ys);
+                za = calcZ(triangle.pMin, triangle.pMid, ys);
+                zb = calcZ(triangle.pMax, triangle.pMin, ys);
+                if(xb == 0){
+                    cout<<"xb is 0(ys < midy)"<<endl;
+                }
+            }
+            if(xa>xb){
+                swap(xa,xb);
+                swap(za,zb);
+            }
+
+            // if(xb == 0){
+            //     cout << "xa : " << xa << " xb : "<< xb<< endl;
+            //     cout << "za : " << za << " zb : "<< zb<< endl;
+            //     //continue;
+            // }
+            
+            // if(xa > xb){
+            //     cout<<"====================here error ig==========================";  
+            //     cout << "xa : " << xa << " xb : "<< xb<< endl;
+            //     // continue;
+            //     cout<<"swap xa & xb."<<endl;
+            //     double temp = xa;
+            //     xa = xb;
+            //     xb = temp;
+            // }
+
+            double za_zb = za - zb;
+            double xa_xb = xa - xb;
+            double za_zb_xa_xb = za_zb / xa_xb;
+
+            double left_scanline = max(xa, Left_X);
+            double right_scanline = min(xb, Right_X);
+            int left_column = columnNumberFromX(left_scanline);
+            int right_column = columnNumberFromX(right_scanline);
+            // cout<<top_row<<" "<<bottom_row<<endl;
+            // cout<<"left_column : "<<left_column<<" right_column : "<<right_column<<endl;
             for(int j=left_column; j<=right_column; j++){
                 //Top_Y- row_no*dy, Left_X+col_no*dx
-                double x = Left_X + j*dx;
-                double y = Top_Y - i*dy;
-                Point p(x,y);
-                //cout<<p<<endl;
-                if(isInTriangle(p, triangle)){
-                    // cout<<"here i am 1\n";
-                    double z = computeZvalue(triangle, p);
-                    if(z < zBuffer[j][i]){
-                        zBuffer[j][i] = z;
-                        image.set_pixel(j,i,triangle.color.r,triangle.color.g,triangle.color.b);
-                        // cout<<"here i am 2\n";
+                double xp = Left_X + j*dx;
+                Point p(xp,ys);
+                if(isInTriangle(p, triangle)){    
+                    double zp = za + (xp-xa)*za_zb_xa_xb;
+                    // cout<<"zp : "<<zp<<endl;
+                    if(zp>FRONT_Z && zp < zBuffer[i][j]){
+                        // cout<<"here i am 1"<<endl;
+                        zBuffer[i][j] = zp;
+                        colorBuffer[i][j] = triangle.color;
                     }
-                }
-                else{
-                    // cout<<"here i am 3\n";
                 }
             }
         }
-        
+    }
+
+    //create image
+    image= bitmap_image(SCREEN_WIDTH, SCREEN_HEIGHT);
+    for(int i=0; i<SCREEN_WIDTH; i++){
+        for(int j=0; j<SCREEN_HEIGHT; j++){
+            image.set_pixel(j,i, colorBuffer[i][j].r, colorBuffer[i][j].g, colorBuffer[i][j].b);
+        }
     }
     image.save_image("output/out.bmp");
 
