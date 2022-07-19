@@ -1,6 +1,4 @@
-#include "UtilsMatrix.h"
-#include "bitmap_image.hpp"
-#include<time.h>
+#include "Utils_ColorTriangle.h"
 
 int SCREEN_WIDTH;
 int SCREEN_HEIGHT;
@@ -8,109 +6,35 @@ double LEFT_LIMIT, RIGHT_LIMIT, BOTTOM_LIMIT, TOP_LIMIT, FRONT_Z, REAR_Z;
 double dx, dy, Top_Y, Left_X, Right_X, Bottom_Y;
 bitmap_image image;
 
-class Triangle;
 vector<Triangle> triangles;
 vector< vector<double> > zBuffer;
 
-class Color{
-    public:
-        int r, g, b;
-        Color(int r, int g, int b){
-            this->r = r;
-            this->g = g;
-            this->b = b;
-        }
-        Color(){
-            r = rand()%256;
-            g = rand()%256;
-            b = rand()%256;
-        }
 
-        friend ostream& operator<<(ostream& os, const Color& c){
-            os<<c.r<<" "<<c.g<<" "<<c.b<<endl;
-            return os;
-        }
-};
 
-class Triangle{
+//for upto stage 3
+Point transformPoint(Matrix m, Point p){
+    Matrix pointMatrix = Matrix::pointMatrix(p);
+    Matrix result = m * pointMatrix;
+    // cout<<fixed<<setprecision(5)<<result<<endl;
+    return result.getPoint();
+}
 
-public:
-    Point points[3];
-    Color color;
 
-    Triangle(Point p1, Point p2, Point p3, Color c){
-        points[0] = p1;
-        points[1] = p2;
-        points[2] = p3;
-        color = c;
-    }
-    Triangle(Point p1, Point p2, Point p3){
-        points[0] = p1;
-        points[1] = p2;
-        points[2] = p3;
-        color = Color();
-    }
+Matrix viewTransformationMatrix(Point eye, Point look, Point up){
+    Point l = look - eye;
+    l.normalize();
+    Point r = l.cross(up);
+    r.normalize();
+    Point u = r.cross(l);
 
-    Triangle(){
-        points[0] = Point();
-        points[1] = Point();
-        points[2] = Point();
-        color = Color();
-    }
+    Matrix T = Matrix::translationMatrix(-eye);
+    Matrix R = Matrix::rotationMatrix(r, u, -l);
 
-    double max_y(){
-        double max = points[0].y;
-        for(int i=1; i<3; i++){
-            if(points[i].y > max){
-                max = points[i].y;
-            }
-        }
-        return max;
-    }
+    Matrix V = R * T;
 
-    double min_y(){
-        double min = points[0].y;
-        for(int i=1; i<3; i++){
-            if(points[i].y < min){
-                min = points[i].y;
-            }
-        }
-        return min;
-    }
+    return V;
+}
 
-    double max_x(){
-        double max = points[0].x;
-        for(int i=1; i<3; i++){
-            if(points[i].x > max){
-                max = points[i].x;
-            }
-        }
-        return max;
-    }
-
-    double min_x(){
-        double min = points[0].x;
-        for(int i=1; i<3; i++){
-            if(points[i].x < min){
-                min = points[i].x;
-            }
-        }
-        return min;
-    }
-
-    friend ostream& operator<<(ostream &out, Triangle &t){
-        out<<"Triangle:"<<endl;
-        out<<t.points[0]<<t.points[1]<<t.points[2]<<endl;
-        out<<"Colors:"<<endl;
-        out<<t.color<<endl;
-        return out;
-    }
-
-    friend istream& operator>>(istream &in, Triangle &t){
-        in>>t.points[0]>>t.points[1]>>t.points[2];
-        return in;
-    } 
-};
 
 void initializeBuffers(){
     //dx,dy
@@ -143,7 +67,7 @@ void initializeBuffers(){
 }
 
 double computeZvalue(Triangle t, Point p){
-    double z = 0;
+    double z = (rand()%2)/REAR_Z;
     
     return z;
 }
@@ -189,13 +113,14 @@ void zBufferAlgorithm(){
                 double x = Left_X + j*dx;
                 double y = Top_Y - i*dy;
                 Point p(x,y);
+                //cout<<p<<endl;
                 if(isInTriangle(p, triangle)){
                     // cout<<"here i am 1\n";
                     double z = computeZvalue(triangle, p);
                     if(z < zBuffer[j][i]){
                         zBuffer[j][i] = z;
                         image.set_pixel(j,i,triangle.color.r,triangle.color.g,triangle.color.b);
-                        cout<<"here i am 2\n";
+                        // cout<<"here i am 2\n";
                     }
                 }
                 else{
