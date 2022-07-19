@@ -90,27 +90,21 @@ bool isInTriangle(Point p, Triangle t){
 
 void zBufferAlgorithm(){
     for (int k=0; k<triangles.size(); k++){
+        //get the triangle
         Triangle triangle = triangles[k];
+        // construct line equations for each edge of the triangle
         triangle.prepareLines();
         // cout<<triangle<<endl;
         //clipping
         double top_scanline = min(triangle.max_y(), Top_Y);
         double bottom_scanline = max(triangle.min_y(), Bottom_Y);
-        // double left_scanline = min(triangle.min_x(), Left_X);
-        // double right_scanline = min(triangle.max_x(), Right_X);
 
         // cout << "top_scanline: " << top_scanline << endl;
         // cout << "bottom_scanline: " << bottom_scanline << endl;
-        // cout<<top_scanline<<" "<<bottom_scanline<<endl;
 
-        //row and column number
+        //row number
         int top_row = rowNumberFromY(top_scanline);
         int bottom_row = rowNumberFromY(bottom_scanline);
-        // int left_column = columnNumberFromX(left_scanline);
-        // int right_column = columnNumberFromX(right_scanline);
-
-        
-        
 
         for(int i=top_row; i<=bottom_row; i++){
             double ys = Top_Y - i*dy;
@@ -134,39 +128,23 @@ void zBufferAlgorithm(){
                 xb = triangle.line31.getX(ys);
                 za = calcZ(triangle.pMax, triangle.pMid, ys);
                 zb = calcZ(triangle.pMin, triangle.pMax, ys);
-                if(xb == 0){
-                    cout<<"xb is 0(ys > midy)"<<endl;
-                }
+                // if(xb == 0){
+                //     cout<<"xb is 0(ys > midy)"<<endl;
+                // }
             }
             else if(ys<triangle.pMid.y){
                 xa = triangle.line23.getX(ys);
                 xb = triangle.line31.getX(ys);
                 za = calcZ(triangle.pMin, triangle.pMid, ys);
                 zb = calcZ(triangle.pMax, triangle.pMin, ys);
-                if(xb == 0){
-                    cout<<"xb is 0(ys < midy)"<<endl;
-                }
+                // if(xb == 0){
+                //     cout<<"xb is 0(ys < midy)"<<endl;
+                // }
             }
             if(xa>xb){
                 swap(xa,xb);
                 swap(za,zb);
             }
-
-            // if(xb == 0){
-            //     cout << "xa : " << xa << " xb : "<< xb<< endl;
-            //     cout << "za : " << za << " zb : "<< zb<< endl;
-            //     //continue;
-            // }
-            
-            // if(xa > xb){
-            //     cout<<"====================here error ig==========================";  
-            //     cout << "xa : " << xa << " xb : "<< xb<< endl;
-            //     // continue;
-            //     cout<<"swap xa & xb."<<endl;
-            //     double temp = xa;
-            //     xa = xb;
-            //     xb = temp;
-            // }
 
             double za_zb = za - zb;
             double xa_xb = xa - xb;
@@ -194,15 +172,6 @@ void zBufferAlgorithm(){
             }
         }
     }
-
-    //create image
-    image= bitmap_image(SCREEN_WIDTH, SCREEN_HEIGHT);
-    for(int i=0; i<SCREEN_WIDTH; i++){
-        for(int j=0; j<SCREEN_HEIGHT; j++){
-            image.set_pixel(j,i, colorBuffer[i][j].r, colorBuffer[i][j].g, colorBuffer[i][j].b);
-        }
-    }
-    image.save_image("output/out.bmp");
 
 }
 

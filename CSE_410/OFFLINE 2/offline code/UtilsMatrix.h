@@ -215,5 +215,12 @@ public:
         return p;
     }
 
+    ~Matrix(){
+        for(int i = 0; i < rows; i++){
+            vector<double>().swap(matrix[i]);
+        }
+        vector< vector<double> >().swap(matrix);
+    }
+
 };
 

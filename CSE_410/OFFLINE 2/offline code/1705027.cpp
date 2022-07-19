@@ -34,7 +34,7 @@ int main(int argc,char* argv[]){
     ofstream outStage1("output/stage1.txt");
     ofstream outStage2("output/stage2.txt");
     ofstream outStage3("output/stage3.txt");
-    ofstream zBufferfile("output/z-buffer.txt");
+    ofstream zBufferfile("output/z_buffer.txt");
 
 
     if(!outStage1.is_open() || !outStage2.is_open() || !outStage3.is_open() || !zBufferfile.is_open()){
@@ -174,7 +174,7 @@ int main(int argc,char* argv[]){
     stage3file.close();
 
     //print read details
-    printDetails();
+    //printDetails();
 
     //z buffer and image setup
     initializeBuffers();
@@ -183,16 +183,35 @@ int main(int argc,char* argv[]){
     zBufferAlgorithm();
 
     //write to z buffer file
-    for(int i = 0; i < SCREEN_HEIGHT; i++){
-        for(int j = 0; j < SCREEN_WIDTH; j++){
+    for(int i = 0; i < SCREEN_WIDTH; i++){
+        for(int j = 0; j < SCREEN_HEIGHT; j++){
             if(zBuffer[i][j]!=REAR_Z)
                 zBufferfile<<zBuffer[i][j]<<"\t";
         }
         zBufferfile<<endl;
     }
-
-    cout<<"memory clear kora lagbe. vector gula delete korte hobe using vector<tempObject>().swap(tempVector);"<<endl;
     zBufferfile.close();
+
+    // cout<<"memory clear kora lagbe. vector gula delete korte hobe using vector<tempObject>().swap(tempVector);"<<endl;
+
+
+    //create image
+    image= bitmap_image(SCREEN_WIDTH, SCREEN_HEIGHT);
+    for(int i=0; i<SCREEN_HEIGHT; i++){
+        for(int j=0; j<SCREEN_WIDTH; j++){
+            image.set_pixel(j,i, colorBuffer[i][j].r, colorBuffer[i][j].g, colorBuffer[i][j].b);
+        }
+    }
+    image.save_image("output/out.bmp");
+
+    // clear vector memory
+    for(int i = 0; i < SCREEN_WIDTH; i++){
+        vector<Color>().swap(colorBuffer[i]);
+        vector<double>().swap(zBuffer[i]);
+    }
+    vector< vector<Color> >().swap(colorBuffer);
+    vector< vector<double> >().swap(zBuffer);
+    vector<Triangle>().swap(triangles);
 
     return 0;
 
