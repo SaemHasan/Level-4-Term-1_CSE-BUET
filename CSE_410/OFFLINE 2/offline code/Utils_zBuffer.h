@@ -10,7 +10,7 @@ vector<Triangle> triangles;
 vector< vector<double> > zBuffer;
 vector< vector<Color> > colorBuffer;
 
-
+// using namespace std;
 
 //for upto stage 3
 Point transformPoint(Matrix m, Point p){
@@ -74,11 +74,11 @@ double calcZ(Point p1, Point p2, double ys){
 }
 
 int rowNumberFromY(double y){
-    return SCREEN_HEIGHT-((y-BOTTOM_LIMIT)/dy);
+    return SCREEN_HEIGHT-(round((y-Bottom_Y)/dy)) - 1;
 }
 
 int columnNumberFromX(double x){
-    return (x-LEFT_LIMIT)/dx;
+    return round((x-Left_X)/dx);
 }
 
 bool isInTriangle(Point p, Triangle t){
@@ -89,7 +89,8 @@ bool isInTriangle(Point p, Triangle t){
 }
 
 void zBufferAlgorithm(){
-    long long int count = 0;
+    // long long int count = 0;
+    // long long int outterCount = 0;
     for (int k=0; k<triangles.size(); k++){
         //get the triangle
         Triangle triangle = triangles[k];
@@ -101,10 +102,15 @@ void zBufferAlgorithm(){
         double bottom_scanline = max(triangle.min_y(), Bottom_Y);
 
         //row number
-        int top_row = rowNumberFromY(top_scanline);
-        int bottom_row = rowNumberFromY(bottom_scanline);
+        int top_row, bottom_row;
+        top_row = rowNumberFromY(top_scanline);
+        bottom_row = rowNumberFromY(bottom_scanline);
 
-        for(int i=top_row; i<bottom_row; i++){
+        // cout<< "top row : "<<top_row<<endl;
+        // cout<< "Bottom row : "<<bottom_row<<endl;
+
+        for(int i=top_row; i<=bottom_row; i++){
+            // outterCount++;
             double ys = Top_Y - i*dy;
             double xa,xb,za,zb;
             Point p1, p2, p3;
@@ -133,6 +139,7 @@ void zBufferAlgorithm(){
                 za = calcZ(triangle.pMin, triangle.pMid, ys);
                 zb = calcZ(triangle.pMax, triangle.pMin, ys);
             }
+            
             if(xa>xb){
                 swap(xa,xb);
                 swap(za,zb);
@@ -146,10 +153,14 @@ void zBufferAlgorithm(){
 
             double left_scanline = max(xa, Left_X);
             double right_scanline = min(xb, Right_X);
-            int left_column = columnNumberFromX(left_scanline);
-            int right_column = columnNumberFromX(right_scanline);
+            int left_column, right_column;
+            left_column = columnNumberFromX(left_scanline);
+            right_column = columnNumberFromX(right_scanline);
 
-            for(int j=left_column; j<right_column; j++){
+            // cout<< left_column<<" "<<right_column<<endl;
+            
+            for(int j=left_column; j<=right_column; j++){
+                //count++;
                 //Top_Y- row_no*dy, Left_X+col_no*dx
                 double xp = Left_X + j*dx;
                 if(j==left_column){
@@ -158,15 +169,19 @@ void zBufferAlgorithm(){
                 else{
                     zp = zp + known_constant;
                 }
-                
-                if(zp>=FRONT_Z && zp < zBuffer[i][j]){
-                    zBuffer[i][j] = zp;
-                    colorBuffer[i][j] = triangle.color;
+                Point p(xp, ys);
+                if(isInTriangle(p, triangle))
+                {
+                    if(zp>=FRONT_Z && zp < zBuffer[i][j]){
+                        zBuffer[i][j] = zp;
+                        colorBuffer[i][j] = triangle.color;
+                    }
                 }
-                
             }
         }
     }
+    // cout << "Outter count : "<< outterCount<<endl;
+    // cout<<"count: "<<count<<endl;
 }
 
 

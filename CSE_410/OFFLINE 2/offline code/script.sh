@@ -14,5 +14,5 @@
 echo "Compiling..."
 g++ -o 1705027 1705027.cpp
 echo "Running..."
-./1705027 "input/scene1.txt" "input/config1.txt"
+./1705027 "input/scene4.txt" "input/config4.txt"
 echo "done"
