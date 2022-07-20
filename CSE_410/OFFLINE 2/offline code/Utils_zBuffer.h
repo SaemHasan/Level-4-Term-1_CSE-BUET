@@ -48,20 +48,20 @@ void initializeBuffers(){
     Right_X = RIGHT_LIMIT - dx/2.0;
 
     //z buffer
-    zBuffer.resize(SCREEN_WIDTH);
-    for(int i=0; i<SCREEN_WIDTH; i++){
-        zBuffer[i].resize(SCREEN_HEIGHT);
-        for(int j=0; j<SCREEN_HEIGHT; j++){
+    zBuffer.resize(SCREEN_HEIGHT);
+    for(int i=0; i<SCREEN_HEIGHT; i++){
+        zBuffer[i].resize(SCREEN_WIDTH);
+        for(int j=0; j<SCREEN_WIDTH; j++){
             zBuffer[i][j] = REAR_Z;
         }
     }
 
     Color black = Color(0,0,0);
     //color buffer
-    colorBuffer.resize(SCREEN_WIDTH);
-    for(int i=0; i<SCREEN_WIDTH; i++){
-        colorBuffer[i].resize(SCREEN_HEIGHT);
-        for(int j=0; j<SCREEN_HEIGHT; j++){
+    colorBuffer.resize(SCREEN_HEIGHT);
+    for(int i=0; i<SCREEN_HEIGHT; i++){
+        colorBuffer[i].resize(SCREEN_WIDTH);
+        for(int j=0; j<SCREEN_WIDTH; j++){
             colorBuffer[i][j] = black;
         }
     }
@@ -69,7 +69,7 @@ void initializeBuffers(){
 
 double calcZ(Point p1, Point p2, double ys){
     double z;
-    z = p1.z + (p2.z - p1.z) * ((ys-p1.y)/(p2.y-p1.y));
+    z = p1.z + ((p2.z - p1.z)*1.0) * ((ys-p1.y)/(p2.y-p1.y)*1.0);
     return z;
 }
 
@@ -89,6 +89,7 @@ bool isInTriangle(Point p, Triangle t){
 }
 
 void zBufferAlgorithm(){
+    long long int count = 0;
     for (int k=0; k<triangles.size(); k++){
         //get the triangle
         Triangle triangle = triangles[k];
@@ -99,14 +100,11 @@ void zBufferAlgorithm(){
         double top_scanline = min(triangle.max_y(), Top_Y);
         double bottom_scanline = max(triangle.min_y(), Bottom_Y);
 
-        // cout << "top_scanline: " << top_scanline << endl;
-        // cout << "bottom_scanline: " << bottom_scanline << endl;
-
         //row number
         int top_row = rowNumberFromY(top_scanline);
         int bottom_row = rowNumberFromY(bottom_scanline);
 
-        for(int i=top_row; i<=bottom_row; i++){
+        for(int i=top_row; i<bottom_row; i++){
             double ys = Top_Y - i*dy;
             double xa,xb,za,zb;
             Point p1, p2, p3;
@@ -128,18 +126,12 @@ void zBufferAlgorithm(){
                 xb = triangle.line31.getX(ys);
                 za = calcZ(triangle.pMax, triangle.pMid, ys);
                 zb = calcZ(triangle.pMin, triangle.pMax, ys);
-                // if(xb == 0){
-                //     cout<<"xb is 0(ys > midy)"<<endl;
-                // }
             }
             else if(ys<triangle.pMid.y){
                 xa = triangle.line23.getX(ys);
                 xb = triangle.line31.getX(ys);
                 za = calcZ(triangle.pMin, triangle.pMid, ys);
                 zb = calcZ(triangle.pMax, triangle.pMin, ys);
-                // if(xb == 0){
-                //     cout<<"xb is 0(ys < midy)"<<endl;
-                // }
             }
             if(xa>xb){
                 swap(xa,xb);
@@ -148,31 +140,33 @@ void zBufferAlgorithm(){
 
             double za_zb = za - zb;
             double xa_xb = xa - xb;
-            double za_zb_xa_xb = za_zb / xa_xb;
+            double za_zb_xa_xb = (za_zb*1.0) / xa_xb;
+            double known_constant = dx * za_zb_xa_xb * 1.0;
+            double zp;
 
             double left_scanline = max(xa, Left_X);
             double right_scanline = min(xb, Right_X);
             int left_column = columnNumberFromX(left_scanline);
             int right_column = columnNumberFromX(right_scanline);
-            // cout<<top_row<<" "<<bottom_row<<endl;
-            // cout<<"left_column : "<<left_column<<" right_column : "<<right_column<<endl;
-            for(int j=left_column; j<=right_column; j++){
+
+            for(int j=left_column; j<right_column; j++){
                 //Top_Y- row_no*dy, Left_X+col_no*dx
                 double xp = Left_X + j*dx;
-                Point p(xp,ys);
-                if(isInTriangle(p, triangle)){    
-                    double zp = za + (xp-xa)*za_zb_xa_xb;
-                    // cout<<"zp : "<<zp<<endl;
-                    if(zp>FRONT_Z && zp < zBuffer[i][j]){
-                        // cout<<"here i am 1"<<endl;
-                        zBuffer[i][j] = zp;
-                        colorBuffer[i][j] = triangle.color;
-                    }
+                if(j==left_column){
+                    zp = za + (xp-xa)*za_zb_xa_xb;
                 }
+                else{
+                    zp = zp + known_constant;
+                }
+                
+                if(zp>=FRONT_Z && zp < zBuffer[i][j]){
+                    zBuffer[i][j] = zp;
+                    colorBuffer[i][j] = triangle.color;
+                }
+                
             }
         }
     }
-
 }
 
 

@@ -183,8 +183,8 @@ int main(int argc,char* argv[]){
     zBufferAlgorithm();
 
     //write to z buffer file
-    for(int i = 0; i < SCREEN_WIDTH; i++){
-        for(int j = 0; j < SCREEN_HEIGHT; j++){
+    for(int i = 0; i < SCREEN_HEIGHT; i++){
+        for(int j = 0; j < SCREEN_WIDTH; j++){
             if(zBuffer[i][j]!=REAR_Z)
                 zBufferfile<<zBuffer[i][j]<<"\t";
         }
@@ -196,7 +196,7 @@ int main(int argc,char* argv[]){
 
 
     //create image
-    image= bitmap_image(SCREEN_WIDTH, SCREEN_HEIGHT);
+    image = bitmap_image(SCREEN_WIDTH, SCREEN_HEIGHT);
     for(int i=0; i<SCREEN_HEIGHT; i++){
         for(int j=0; j<SCREEN_WIDTH; j++){
             image.set_pixel(j,i, colorBuffer[i][j].r, colorBuffer[i][j].g, colorBuffer[i][j].b);
@@ -205,7 +205,7 @@ int main(int argc,char* argv[]){
     image.save_image("output/out.bmp");
 
     // clear vector memory
-    for(int i = 0; i < SCREEN_WIDTH; i++){
+    for(int i = 0; i < SCREEN_HEIGHT; i++){
         vector<Color>().swap(colorBuffer[i]);
         vector<double>().swap(zBuffer[i]);
     }
